@@ -3,7 +3,10 @@ title: "Data Visualization Workshop Website"
 description: |
   Workshop Website
 output_dir: "docs"
+repository_url: https://github.com/drpakhare/Public-Health-Data-Visualization-Workshop-IAPSMYC2021
+include: [".nojekyll"]
 navbar:
+  source_url: true
   right:
     - text: "Home"
       href: index.html
