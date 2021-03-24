@@ -1,0 +1,253 @@
+---
+#############################################################
+#                                                           #
+# Click on "Run Document" in RStudio to run this worksheet. #
+#                                                           #
+#############################################################
+title: "Public Health Data Visualization for Beginers Exercise-1"
+author: "Abhijit P Pakhare and Ashwini Kalantri"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(tidyverse)
+library(ggrepel)
+library(lubridate)
+knitr::opts_chunk$set(echo = FALSE, comment = "")
+
+# Import key NFHS indicator dataset
+
+df_nfhs<- read.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vTdQq1FMM8HedkjOcxKEEqcTpei6RnYqIdbfgCilRk1XiPsloqaCvrJ-C1sLDKmYi3KJI6Tb9ga6xxZ/pub?gid=0&single=true&output=csv")
+
+# Import GDP dataset
+
+df_gdp<- read.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vTdQq1FMM8HedkjOcxKEEqcTpei6RnYqIdbfgCilRk1XiPsloqaCvrJ-C1sLDKmYi3KJI6Tb9ga6xxZ/pub?gid=1296486578&single=true&output=csv")
+
+df_nfhs<-df_nfhs %>% 
+  mutate(Source=as_factor(Source))
+
+df_nfhs_5<- df_nfhs %>% 
+  filter(Year==2020) %>% 
+  left_join(df_gdp, by=c("State","State.Code")) %>% 
+  pivot_wider(names_from = Indicator,
+              values_from = Estimate) %>% 
+  mutate(IMR_Level= if_else(IMR>=30, ">=30", "<30")) %>% 
+  mutate(IMR_Level=as_factor(IMR_Level)) %>% 
+  filter(GDP_Per_Capita_2019_in_thousands>0) %>% 
+  rename(GDP_PC_thousands=GDP_Per_Capita_2019_in_thousands) %>% 
+  select(State.Code,
+         Population_Lakhs,
+         GDP_PC_thousands,
+         IMR,
+         Immunization_Full,
+         Immunization_BCG,
+         State)
+
+```
+**Attribution- This exercise is adapeted and modified from course material posted by Claus O. Wilke which is licensed under Creative Commons Attribution CC BY 4.0. https://github.com/wilkelab/SDS375 ** 
+
+## Introduction
+
+In this worksheet, we will discuss a core concept of ggplot, the mapping of data values onto aesthetics.
+
+We will be using the R package **tidyverse**, which includes `ggplot()` and related functions.
+
+```{r library-calls, echo = TRUE, eval = FALSE}
+# load required library
+library(tidyverse)
+```
+
+The dataset we will be working with contains the key indicators published in [State Fact Sheets](http://rchiips.org/nfhs/factsheet_NFHS-5.shtml) of National Family Health Survey-5 :
+```{r nfhs-5, echo = TRUE}
+df_nfhs_5
+```
+
+## Basic use of ggplot
+
+In the most basic use of ggplot, we call the `ggplot()` function with a dataset and an aesthetic mapping (created with `aes()`), and then we add a geom, such as `geom_point()` to draw points or `geom_bar()` to draw bars.
+### Data and axis mapping
+Try this for yourself. Map the column `GDP_PC_thousands` onto the x axis and the column `IMR` onto the y axis.  
+
+```{r ggplot_blank, exercise=TRUE}
+ggplot(df_nfhs_5, aes(x = ___, y = ___)) 
+```
+
+```{r ggplot_blank-hint}
+ggplot(df_nfhs_5, aes(x = GDP_PC_thousands, y = ___)) 
+```
+
+```{r ggplot_blank-solution}
+ggplot(df_nfhs_5, aes(x = GDP_PC_thousands, y = IMR)) 
+```
+
+Axes are mapped, now  use `geom_point()` to display the data.
+
+```{r ggplot, exercise=TRUE}
+ggplot(df_nfhs_5, aes(x = ___, y = ___)) +
+  ___()
+```
+
+```{r ggplot-hint}
+ggplot(df_nfhs_5, aes(x = GDP_PC_thousands, y = IMR)) +
+  geom____()
+```
+
+```{r ggplot-solution}
+ggplot(df_nfhs_5, aes(x = GDP_PC_thousands, y = IMR)) +
+  geom_point()
+```
+
+
+And now swap which column you map to x and which to y.
+
+```{r ggplot3, exercise=TRUE}
+ggplot(df_nfhs_5, aes(x = ___, y = ___)) +
+  geom_point()
+```
+
+```{r ggplot3-solution}
+ggplot(df_nfhs_5, aes(x = IMR, y = GDP_PC_thousands)) +
+  geom_point()
+```
+
+## Adding size- Scatter to Bubble
+
+
+Make a plot of `GDP_PC_thousands` against `IMR`, using the `size` aesthetic in `geom_point` to vary the size of the points by `Population_Lakhs` 
+
+```{r ggplot-size, exercise=TRUE}
+ggplot(df_nfhs_5, aes(x = ___, y = ___)) +
+  ___(aes(size=___))
+```
+
+```{r ggplot-size-hint}
+ggplot(df_nfhs_5, aes(x = GDP_PC_thousands, y = IMR) +
+  geom_point(aes(size=___))
+```
+
+```{r ggplot-size-solution}
+ggplot(df_nfhs_5, aes(x = GDP_PC_thousands, y = IMR)) +
+  geom_point(aes(size=Population_Lakhs))
+```
+
+
+
+## Adding data labels
+Each point in the graph represents a state. However visualization would be easy to read if we can label data point with `State.Code`. This can be achieved by adding a `geom_text` layer to the existing graph and mapping it with `State.Code`.
+
+```{r ggplot-label, exercise=TRUE}
+ggplot(df_nfhs_5, aes(x = GDP_PC_thousands, y = IMR)) +
+  geom_point(aes(size=Population_Lakhs))+
+  geom_text_repel(aes(label=___))
+```
+```{r ggplot-label-solution}
+ggplot(df_nfhs_5, aes(x = GDP_PC_thousands, y = IMR)) +
+  geom_point(aes(size=Population_Lakhs))+
+  geom_text_repel(aes(label=State.Code))
+```
+
+## Using the `colour` aesthetic
+
+We can map a variable either of three mapped earlier to colour aesthetics and visualize colour of the point as function of mapped variable. For this we have to map `colour` aesthetic under `geom_point(colour=___)`. Let us try by mapping `IMR` to colour aesthetics.
+
+```{r ggplot-colour, exercise=TRUE}
+ggplot(___, aes(x = GDP_PC_thousands, y = IMR)) +
+  ___(aes(size=Population_Lakhs, colour=___))+
+  geom_text_repel(aes(label=State.Code))
+```
+
+```{r ggplot-colour-hint}
+ggplot(df_nfhs_5, aes(x = GDP_PC_thousands, y = IMR)) +
+  geom_point(aes(size=Population_Lakhs, colour=___))+
+  geom_text_repel(aes(label=State.Code))
+```
+
+```{r ggplot-colour-solution}
+ggplot(df_nfhs_5, aes(x = GDP_PC_thousands, y = IMR)) +
+  geom_point(aes(size=Population_Lakhs, colour=IMR))+
+  geom_text_repel(aes(label=State.Code))
+```
+
+
+## Using aesthetics as parameters
+
+Many of the aesthetics (such as `color`, `fill`, and also `size` to change line size or point thickness) can be used as parameters inside a geom rather than inside an `aes()` statement. The difference is that when you use an aesthetic as a parameter, you specify a specific value, such as `color = "steelblue"`, rather than a mapping, such as `aes(color = IMR)`. Notice the difference: Inside the `aes()` function, we don't actually specify the specific color values, ggplot does that for us. We only say that we want the data values of the `IMR` column to correspond to different colors.
+
+Try this with the  example from the previous section. Set the color of the points to `"color = "steelblue""` autside `aes` in `geom_point()`.
+
+```{r ggplot-params, exercise=TRUE}
+ggplot(___, aes(x = GDP_PC_thousands, y = ___)) +
+  geom_point(aes(size=Population_Lakhs),color = "___")+
+  geom_text_repel(aes(___=State.Code))
+```
+
+```{r ggplot-params-hint}
+ggplot(df_nfhs_5, aes(x = GDP_PC_thousands, y = IMR)) +
+  geom_point(aes(size=Population_Lakhs),color = "___")+
+  geom_text_repel(aes(label=State.Code))
+```
+
+```{r ggplot-params-solution}
+ggplot(df_nfhs_5, aes(x = GDP_PC_thousands, y = IMR)) +
+  geom_point(aes(size=Population_Lakhs),color = "steelblue")+
+  geom_text_repel(aes(label=State.Code))
+```
+
+## Changing Theme
+
+You may not like the default plot produced in earlier examples. `ggplot` provides options for customizations however it may need further travel on learning curve. We will now learn use of some themes available within `ggplot2` package. One of the popular theme is `theme_minimal` . Try adding it as a layer in the plot produced in previous example.
+
+```{r ggplot-themes, exercise=TRUE}
+ggplot(___, aes(x = GDP_PC_thousands, y = ___)) +
+  geom_point(aes(size=Population_Lakhs),color = "___")+
+  geom_text_repel(aes(___=State.Code))+
+  ___
+```
+
+
+```{r ggplot-themes-solution}
+ggplot(df_nfhs_5, aes(x = GDP_PC_thousands, y = IMR)) +
+  geom_point(aes(size=Population_Lakhs),color = "steelblue")+
+  geom_text_repel(aes(label=State.Code))+
+  theme_minimal()
+```
+
+## Adding titles, subtitles, labels and captions
+Data visualization should be standalone and self-explanatory. Therefore we need to modify our plot and add titles, subtitles, axis labels and captions. In `ggplot2` we can add these as a layer. Let us modify our code and assign titles. We have use `labs()` layer for this purpose.  
+
+Assign,  
+
+`title`="Infant Mortality Rate vs Gross-Domestic Product across States in India",  
+
+`subtitle`="Data Source- NFHS-5 Fact Sheets and GDP series from MOPSI",  
+
+`caption`="Bubble diagram shows Infant Mortality Rate (Y-axis) and Income indicated by Per Capita GDP (X-axis). \n Each bubble represents a state and size of the bubble is proportional to population of the state. \n Plot shows inverse relationship of income and infant mortality. \n But at the same time variation is also observed in infant mortality of states which have similar income",  
+
+`x`="Per Capita Gross Domestic Product in thousands",  
+
+`y`="Infant Mortality Rate"
+
+```{r ggplot-titles, exercise=TRUE}
+ggplot(___, aes(x = GDP_PC_thousands, y = ___)) +
+  geom_point(aes(size=Population_Lakhs),color = "___")+
+  geom_text_repel(aes(___=State.Code))+
+  theme_minimal() +
+  ___
+```
+
+
+
+```{r ggplot-titles-solution, fig.width=10, fig.height=8}
+ggplot(df_nfhs_5, aes(x = GDP_PC_thousands, y = IMR)) +
+  geom_point(aes(size=Population_Lakhs),color = "steelblue")+
+  geom_text_repel(aes(label=State.Code))+
+  theme_minimal()+
+  labs(title="Infant Mortality Rate vs Gross-Domestic Product across States in India",
+subtitle="Data Source- NFHS-5 Fact Sheets and GDP series from MOPSI",
+caption="Bubble diagram shows Infant Mortality Rate (Y-axis) and Income indicated by Per Capita GDP (X-axis). \n Each bubble represents a state and size of the bubble is proportional to population of the state. \n Plot shows inverse relationship of income and infant mortality. \n But at the same time variation is also observed in infant mortality of states which have similar income",
+x="Per Capita Gross Domestic Product in thousands",
+y="Infant Mortality Rate")+
+  theme(legend.position="bottom")
+```
