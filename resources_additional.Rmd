@@ -1,0 +1,63 @@
+---
+title: "Resources for learning"
+
+date: "`r Sys.Date()`"
+output:
+  distill::distill_article:
+    toc: true
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+## Resources for Data Visualization with R and RStudio
+
+### Books (Online & Free)
+* [ggplot2: Elegant Graphics for Data Analysis](https://ggplot2-book.org/) by ggplot2 developer [Hadley Wickham](http://hadley.nz)
+* [Fundamentals of Data Visualization](https://clauswilke.com/dataviz/) by [Claus O. Wilke](https://clauswilke.com) ,you can also explore [course based on book](https://wilkelab.org/SDS375/)
+* [Data Visualization: A practical introduction](http://socviz.co/)
+* [Data Visualization with R](https://rkabacoff.github.io/datavis/)
+
+
+### Tutorials
+* [RStudio Primers](https://rstudio.cloud/learn/primers) 
+* [Cedric Scherer](https://twitter.com/CedScherer)'s ["A `ggplot2` tutorial for beautiful plotting in R"](https://www.cedricscherer.com/2019/08/05/a-ggplot2-tutorial-for-beautiful-plotting-in-r/#legends)
+
+### Presentations
+* ["An Introduction to {ggplot2}"](https://www.cedricscherer.com/slides/2019-08-28-intro-ggplot-statsizw#17) by [Cedric Scherer](https://twitter.com/CedScherer)
+* [A ggplot2 grammer guide](https://evamaerey.github.io/ggplot2_grammar_guide/ggplot2_grammar_guide#1) by [Gina Reynolds](https://evangelinereynolds.netlify.app)
+* [ggplot2 flipbook](https://evamaerey.github.io/ggplot_flipbook/ggplot_flipbook_xaringan.html#1) by [Gina Reynolds](https://evangelinereynolds.netlify.app)
+
+### RStudio Cheatsheets
+* https://rstudio.com/resources/cheatsheets/ 
+
+### ggplot2 Extensions 
+
+* [ggplot2 extensions](https://exts.ggplot2.tidyverse.org/)
+
+### Graph Gallery and chart types
+
+* [The R Graph Gallery](https://www.r-graph-gallery.com/)
+* [From Data to Viz](https://www.data-to-viz.com/) by [Yan Holtz](https://twitter.com/R_Graph_Gallery) and [Conor Healy](http://www.conor.fr/indexEN.html)
+* [Visual Vocabulary by FT](http://ft-interactive.github.io/visual-vocabulary/)
+* [Interactive Chart Chooser](https://depictdatastudio.com/charts/)
+* [chart.guide](https://chart.guide/topics/chartguide-poster-4-0/)
+
+### Plotting by drag and drop 
+* [esquisse add-in](https://dreamrs.github.io/esquisse/)
+
+### Graphs and statistics details on same plot
+* [ggstatsplot: ggplot2 Based Plots with Statistical Details](https://indrajeetpatil.github.io/ggstatsplot/index.html)
+
+### Links to other resource pages
+
+* A curated list of awesome ggplot2 tutorials, packages etc. [Awsome ggplot2](https://github.com/erikgahner/awesome-ggplot2/blob/master/README.md)
+
+## Other awesome data visualization tools
+* [Google Sheets](https://www.google.com/sheets/about/) 
+* [Tableau Public](https://public.tableau.com/en-us/s/)
+* [Datawrapper](https://www.datawrapper.de)
+* [Power BI](https://powerbi.microsoft.com/en-us/)
+* [Plotly](https://plotly.com/dash/)
+* [RAWGraphs](https://rawgraphs.io)

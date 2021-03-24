@@ -1,0 +1,10 @@
+---
+title: "About this site"
+description: |
+  This website is created for participants of "Public Health Data Visualization for Beginers" virtual workshop conducted on 23 March 2021. This workshop was part of 2nd IAPSM Yound Leader's National Conclave organized by Department of Community Medicine , Mahatma Gandhi Institute of Medical Sciences, Wardha.
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+

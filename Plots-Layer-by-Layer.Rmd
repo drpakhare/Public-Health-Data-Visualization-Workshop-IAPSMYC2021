@@ -1,0 +1,452 @@
+---
+title: "Creating Plots- Layer by Layer"
+subtitle: "Example Plots"
+author: "Dr Abhijit Pakhare and Dr Ashwini Kalantri"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: [default, hygge, ninjutsu]
+    nature:
+      ratio: 16:9
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+
+```{r, include = F}
+knitr::opts_chunk$set(fig.width = 7, message = FALSE, warning = FALSE, comment = "", cache = F)
+library(flipbookr)
+library(tidyverse)
+library(ggrepel)
+library(tidytext)
+library(ggcharts)
+library(colorspace)
+library(ggforce)
+```
+
+```{css, eval = TRUE, echo = FALSE}
+.remark-code{line-height: 1.5; font-size: 80%}
+@media print {
+  .has-continuation {
+    display: block;
+  }
+}
+```
+
+
+
+```{r data_import, echo=FALSE}
+# Import key NFHS indicator dataset
+
+df_nfhs<- read.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vTdQq1FMM8HedkjOcxKEEqcTpei6RnYqIdbfgCilRk1XiPsloqaCvrJ-C1sLDKmYi3KJI6Tb9ga6xxZ/pub?gid=0&single=true&output=csv")
+
+# Import GDP dataset
+
+df_gdp<- read.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vTdQq1FMM8HedkjOcxKEEqcTpei6RnYqIdbfgCilRk1XiPsloqaCvrJ-C1sLDKmYi3KJI6Tb9ga6xxZ/pub?gid=1296486578&single=true&output=csv")
+
+df_nfhs<-df_nfhs %>% 
+  mutate(Source=as_factor(Source))
+
+df_nfhs_5<- df_nfhs %>% 
+  filter(Year==2020) %>% 
+  left_join(df_gdp, by=c("State","State.Code")) %>% 
+  pivot_wider(names_from = Indicator,
+              values_from = Estimate) %>% 
+  mutate(IMR_Level= if_else(IMR>=30, ">=30", "<30"),
+         State_Population_Cat= if_else(Population_Lakhs >=300, ">= 3 Cr", "<3 Cr")) %>% 
+  mutate(IMR_Level=as_factor(IMR_Level)) 
+```
+
+
+
+# Visualizations to be demonstrated
+
+--
+
+Bubble diagram or Scatter plot showing correlation of Infant Mortality Rate (IMR) as per NFHS-5 data and Gross Domestic Product (State Net Domestic Product for the year 2019)
+
+--
+
+Box plot showing distribution of GDP per capita among states with low and high infant mortality (<30 per 1000 liver births and > 30 per 1000 live births)
+
+--
+
+Bar Plot showing selected indicators over years stratified by State
+
+--
+
+Line graph showing change in given indicators from NFHS-2 to NFHS-5 stratified by State
+
+--
+
+Dumbbell plot showing change in given indicators from NFHS-4 to NFHS-5 stratified by State
+
+
+---
+class: inverse, middle, center
+
+
+# Scatter plot - Infant Mortality and GDP per capita
+
+
+
+
+
+<!-- get a flipbook version of the bubble code chunk - pauses are where parentheses are balanced -->
+---
+
+`r chunk_reveal("scatter", title="Scatter Plot")`
+
+```{r scatter, include = FALSE}
+  ggplot(data = df_nfhs_5)+
+  aes(x=GDP_Per_Capita_2019_in_thousands) +
+  aes(y=IMR) +
+  geom_point()
+```
+---
+
+
+## Scatter plot- Infant Mortality and GDP per capita 
+
+--
+- Three critical layers 
+
+--
+- Data - indicated by name of dataframe 
+  
+--
+- Mapping of aesthetic `aes()` 
+  
+--
+- Geometry to visualize `geom_point()` 
+  
+--
+- Further customization is needed 
+
+--
+- Let's do it!
+
+
+---
+
+`r chunk_reveal("bubble", title="Bubble Diagram")`
+
+```{r bubble, include = FALSE}
+df_nfhs_5 %>% 
+  ggplot()+
+  aes(x=GDP_Per_Capita_2019_in_thousands) +
+  labs(x="GDP per capita")+
+  aes(y=IMR) +
+  geom_point(aes(colour=IMR))+
+  scale_color_gradient2()+
+  geom_text_repel(aes(label=State.Code))+
+  aes(size=Population_Lakhs)+
+  theme_minimal()+
+  theme(legend.position = "bottom")+
+  labs(title = "State wise Infant Mortality Rate and GDP per capita")+
+  labs(caption = "Source: State Level Facts Sheets from NFHS-5, GDP Data- MOPSI Website")+
+  theme(plot.title = element_text(face = "bold", 
+                                  colour = "purple"))
+```
+---
+### Using Log scale alters visualization 
+```{r bubble_limit, include=TRUE, echo=FALSE}
+p1<-df_nfhs_5 %>% 
+  ggplot()+
+  aes(x=GDP_Per_Capita_2019_in_thousands) +
+  labs(x="GDP per capita")+
+  aes(y=IMR) +
+  geom_point(aes(colour=IMR), size=4)+
+  scale_color_gradient2()+
+  geom_text_repel(aes(label=State.Code))+
+  theme_light()+
+  theme(legend.position = "none")+
+  labs(title = "State wise Infant Mortality Rate and GDP per capita")+
+  labs(subtitle = "X-axis not altered")
+```
+```{r bubble_log, include=TRUE, echo=FALSE}
+p2<-df_nfhs_5 %>% 
+  ggplot()+
+  aes(x=GDP_Per_Capita_2019_in_thousands) +
+  labs(x="GDP per capita (Scale is Logarithmic)")+
+  scale_x_log10()+
+  aes(y=IMR) +
+  geom_point(aes(colour=IMR), size=4)+
+  scale_color_gradient2()+
+  geom_text_repel(aes(label=State.Code))+
+  theme_light()+
+  theme(legend.position = "none")+
+  labs(title = "State wise Infant Mortality Rate and GDP per capita")+
+  labs(subtitle = "X-axis Log transformed")
+```
+```{r bubble_merge, echo=FALSE, include=TRUE, fig.width=14, fig.height=8}
+library(patchwork)
+p<-p1+p2
+p
+```
+
+
+---
+class: inverse, middle, center
+
+
+# Box plot showing distribution of GDP per capita among states grouped by different levels of IMR
+
+
+
+
+
+<!-- get a flipbook version of the box code chunk - pauses are where parentheses are balanced -->
+---
+
+
+`r chunk_reveal("box", title="Box Plot")`
+
+```{r box, include = FALSE}
+df_nfhs_5 %>% 
+  ggplot()+
+  aes(y=GDP_Per_Capita_2019_in_thousands) +
+  labs(y="GDP per capita")+
+  aes(x=IMR_Level) +
+  geom_boxplot()+
+  theme_minimal()+
+  aes(fill=IMR_Level)+
+  theme(legend.position = "bottom")+
+  labs(title = "Box plot showing distribution of GDP per capita")
+```
+
+---
+class: inverse, middle, center
+
+
+# Bar plot showing indicators
+
+---
+`r chunk_reveal("bar1", title="Bar Chart")`
+
+
+
+
+```{r bar1, include = FALSE}
+df_nfhs %>% 
+  filter(Indicator=="Stunting_U5") %>% 
+  ggplot()+
+  aes(x=Estimate)+
+  aes(y=State.Code)+
+  geom_col() +
+  facet_wrap(facets = "Year")+
+  facet_wrap(facets = "Year", scales = "free_y")+
+  labs(x="Prevalence of Stunting")+
+  theme_minimal()
+```
+---
+
+
+# Were you satisfied with the previous bar chart? 
+
+--
+  - What was wrong? 
+
+--
+  - You need to scratch your head to understand anything 
+  
+--
+  - Ordering states based on estimate will bring some clarity 
+
+--
+  - Let's re-do this chart 
+---
+`r chunk_reveal("bar", title="Bar Chart")`
+
+
+
+
+```{r bar, include = FALSE}
+df_nfhs %>% 
+  filter(Indicator=="Stunting_U5") %>% 
+  ggplot()+
+  facet_wrap(~Year,scales = "free_y")+
+  aes(y=reorder_within(State.Code,Estimate, Year))+
+  scale_y_reordered()+
+  aes(x=Estimate)+
+  labs(x="Prevalence of Stunting")+
+  geom_col(aes(fill=Estimate), show.legend = FALSE) +
+  scale_fill_gradient2()+
+  geom_text(aes(label=round(Estimate,1)), hjust=1, colour="white")+
+  theme_minimal()+
+  labs(title = "State wise prevalence of Stunting among children under 5 years of age")+
+  labs(subtitle = "National Family Health Survey NFHS-3,4 and 5")
+```
+
+---
+class: inverse, middle, center
+
+# Lollipop chart 
+
+---
+
+
+
+
+```{r lollipop, include = TRUE, echo=FALSE, fig.width=14, fig.height=8}
+  df_nfhs %>% 
+  filter(Indicator=="Stunting_U5") %>% 
+  ggplot()+
+  aes(x=reorder_within(State.Code,Estimate, Year))+
+  labs(x=NULL)+
+  aes(y=Estimate)+
+  labs(y="Prevalence of Stunting")+
+  geom_segment(aes(xend=reorder_within(State.Code,Estimate, Year), yend=0)) +
+  scale_x_reordered()+
+  geom_point(aes(colour=Estimate), size=6, show.legend = FALSE)+
+  scale_colour_gradient2()+
+  geom_text(aes(label=round(Estimate,1)),  size=2, colour="white")+
+  coord_flip()+
+  facet_wrap(~Year,scales = "free_y")+
+  theme_minimal()+
+  labs(title = "State wise prevalence of stunting among children under 5 years of age")+
+  labs(subtitle = "National Family Health Survey NFHS-3,4 and 5")
+
+```
+---
+class: inverse, middle, center
+
+# Line Diagram
+
+
+---
+`r chunk_reveal("line_diagram", title="Line Diagram")`
+
+
+
+
+
+```{r line_diagram, include = FALSE}
+df_nfhs %>% 
+  filter(Indicator=="Stunting_U5" |Indicator=="Wasting_U5" | Indicator=="Underweight_U5") %>% 
+  filter(State.Code !="AN" & State.Code !="LD" & State.Code !="CH" & State.Code !="DN"  & State.Code !="DD" & State.Code!="LH" & State.Code!="PY") %>% 
+  ggplot()+
+  aes(x=Year)+
+  aes(y=Estimate)+
+  labs(y=NULL)+
+  geom_line()+
+  aes(colour=Indicator)+
+  facet_wrap(~State)+
+  geom_text(aes(label=round(Estimate,0)),size=2)+
+  theme_light()+
+  theme(legend.position = "bottom")
+
+```
+---
+class: inverse, middle, center
+
+# Line Diagram (After editing)
+---
+
+
+```{r line_stunting, echo=FALSE, fig.width=15, fig.height=10}
+line_graph<- df_nfhs %>% 
+  filter(Indicator=="Stunting_U5" |Indicator=="Wasting_U5" | Indicator=="Underweight_U5") %>% 
+  filter(State.Code !="AN" & State.Code !="LD" & State.Code !="CH" & State.Code !="DN"  & State.Code !="DD" & State.Code!="LH" & State.Code!="PY") %>% 
+  ggplot()+
+  aes(x=Year)+
+  aes(y=Estimate)+
+  labs(y=NULL)+
+  geom_line(aes(colour=Indicator, alpha=1), size=1.5)+
+  geom_point(aes(colour=Indicator, alpha=1), size=4)+
+  geom_text_repel(aes(label=round(Estimate,0)),size=2)+
+  facet_wrap(~State)+
+  theme_light()+
+  theme(legend.position = "bottom")+
+  labs(title = "State wise prevalence of stunting, wasting and underweight among children below 5 years of age",
+       subtitle = "Source- NFHS-3,4 and 5 State Facts Sheets")
+line_graph
+```
+---
+class: inverse, middle, center
+
+# Difference in Wasting
+---
+
+
+```{r df_difference, echo=FALSE}
+df_wasting_difference<- df_nfhs %>% 
+  filter(Indicator=="Wasting_U5") %>% 
+  select(Source,
+         State,
+         Estimate) %>% 
+  pivot_wider(names_from = Source,
+              values_from = Estimate) %>% 
+  mutate(Difference=(`NFHS-5`-`NFHS-4`),
+         Difference_Cat=if_else(Difference>0, "Worsened", "Improved")) %>% 
+  drop_na()
+df_wasting_difference
+```
+
+---
+class: middle, center
+## Diverging bar chart from `ggcharts` package
+```{r divergingbar, echo=FALSE, fig.width=9, fig.height=6}
+diverging_bar_chart(
+  data=df_wasting_difference, 
+  x=State, 
+  y=Difference,
+  bar_colors = c("#b32134", "#006400"),
+  text_color = c("#b32134", "#006400"))+
+  labs(title= "Difference in prevalence of wasting between NFHS-5 and NFHS-4",
+    y="Difference",
+    x=NULL,
+    caption = "Chart created by using `divergeing_bar_chart` function of `ggcharts` package")
+```
+---
+## Code for Diverging bar chart from `ggcharts` package
+```{r divergingbar1, echo=TRUE, eval=FALSE}
+library(ggcharts)
+# One line code will generate default plot
+diverging_bar_chart(data=df_wasting_difference, x=State, y=Difference)
+
+# Further customization
+diverging_bar_chart(
+  data=df_wasting_difference, 
+  x=State, 
+  y=Difference,
+  bar_colors = c("#b32134", "#006400"),
+  text_color = c("#b32134", "#006400"))+
+  labs(title= "Difference in prevalence of wasting between NFHS-5 and NFHS-4",
+    y="Difference",
+    x=NULL,
+    caption = "Chart created by using `divergeing_bar_chart` function of `ggcharts` package")
+```
+
+---
+class: middle, center
+
+## Dumbbel plot `ggcharts` package
+```{r dumbell, echo=FALSE, fig.width=9, fig.height=6}
+dumbbell_chart(data=df_wasting_difference, x=State, y1=`NFHS-5`, y2=`NFHS-4`)+
+  labs(title="Prevalence of wasting across states, NFHS-4 & 5",
+       y="Prevalence of Wasting",
+       x=NULL,
+       caption = "Chart created by using `dumbbell_chart` function of `ggcharts` package")
+```
+---
+## Code for Dumbbel plot `ggcharts` package
+```{r dumbell1, echo=TRUE, eval=FALSE}
+library(ggcharts)
+# One line code will generate default plot
+dumbbell_chart(data=df_wasting_difference, x=State, y1=`NFHS-5`, y2=`NFHS-4`)
+
+# Further labels, title etc
+
+dumbbell_chart(data=df_wasting_difference, x=State, y1=`NFHS-5`, y2=`NFHS-4`)+
+  labs(title="Prevalence of wasting across states, NFHS-4 & 5",
+       y="Prevalence of Wasting",
+       x=NULL,
+       caption = "Chart created by using `dumbbell_chart` function of `ggcharts` package")
+```
+
+
+
+
+

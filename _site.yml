@@ -1,0 +1,26 @@
+name: "Data Visualization Workshop March 2021"
+title: "Data Visualization Workshop Website"
+description: |
+  Workshop Website
+output_dir: "docs"
+navbar:
+  right:
+    - text: "Home"
+      href: index.html
+    - text: "Plots Demo"
+      href: Plots-Layer-by-Layer.html
+    - text: "Exercises"
+      menu:
+        - text: "Ex-1 Basics (Interactive)"
+          href: Exercises/Visualization-Exercise-1.Rmd
+        - text: "Ex-2 Bar Charts (Interactive)"
+          href: Exercises/Visualization-Exercise-2 Bar charts and its variants.Rmd
+        - text: "Ex-3 Trend Visualization (R-Script) "
+          href: Exercises/Exercise-3.R
+      href: Plots-Layer-by-Layer.html
+    - text: "Resources"
+      href: resources_additional.html
+    - text: "About"
+      href: about.html
+      
+output: distill::distill_article
